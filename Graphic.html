@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphic Code Pro - 智能设计 (色彩提取修复版)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #121212;
+            --bg-sidebar: #1e1e1e;
+            --bg-tool: #2d2d2d;
+            --accent: #3794ff;
+            --accent-light: #5ca8ff;
+            --text-main: #e0e0e0;
+            --text-sub: #909090;
+            --border: #333;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --guide-color: #00e0ff;
+        }
+
+        * { box-sizing: border-box; user-select: none; outline: none; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+
+        /* 左侧侧边栏 */
+        .sidebar {
+            width: 320px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 20; flex-shrink: 0;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        }
+        .logo-area {
+            padding: 16px; font-size: 18px; font-weight: 800; color: #fff; background: #181818;
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; position: relative;
+        }
+        .logo-icon { color: var(--accent); }
+        .logo-area::after { content: 'PRO'; position: absolute; right: 16px; background: var(--accent); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+        .text-tool-box { padding: 15px; border-bottom: 1px solid var(--border); background: #222; }
+        .tool-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .std-input {
+            background: var(--bg-tool); border: 1px solid #444; color: #fff; padding: 8px 12px;
+            border-radius: 6px; font-size: 13px; width: 100%; transition: border 0.2s;
+        }
+        .std-input:focus { border-color: var(--accent-light); }
+        
+        .icon-btn {
+            background: var(--bg-tool); border: 1px solid #444; color: #ccc; width: 36px; height: 36px;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #444; color: #fff; transform: translateY(-2px); }
+        .icon-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 8px rgba(55, 148, 255, 0.5); }
+
+        .upload-box { padding: 12px; border-bottom: 1px solid var(--border); }
+        .btn-main {
+            width: 100%; padding: 12px; background: linear-gradient(90deg, #3794ff, #0060c2);
+            color: white; border-radius: 8px; cursor: pointer; text-align: center; font-size: 14px; font-weight: 600;
+            display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.4); }
+        
+        .library-container { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .library-container::-webkit-scrollbar { width: 6px; }
+        .library-container::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+        .accordion-item { border-bottom: 1px solid #333; }
+        .accordion-header {
+            width: 100%; padding: 12px 15px; background: #252525; color: var(--text-sub);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; transition: 0.2s; letter-spacing: 0.5px;
+        }
+        .accordion-header:hover { color: #fff; background: #2a2a2a; }
+        .accordion-header.active { color: var(--accent); border-left: 3px solid var(--accent); background: #222; }
+        .accordion-header i { transition: transform 0.3s; font-size: 12px; }
+        .accordion-header.active i { transform: rotate(180deg); }
+        .accordion-content { display: none; padding: 10px; background: var(--bg-sidebar); }
+        .accordion-content.show { display: block; }
+
+        .assets-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+        .asset-item {
+            aspect-ratio: 1; background: var(--bg-tool); border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 1px solid transparent; transition: all 0.2s; padding: 4px; overflow: hidden;
+        }
+        .asset-item:hover { background: #444; border-color: var(--accent); transform: scale(1.1); z-index: 2; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
+        .asset-item svg { width: 100%; height: 100%; fill: #bbb; display: block; transition: fill 0.2s; }
+        .asset-item:hover svg { fill: var(--accent-light); }
+
+        /* 画布区域 */
+        .workspace { flex: 1; position: relative; background: #0f0f0f; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .canvas-bg {
+            box-shadow: 0 0 60px rgba(0,0,0,0.8); background-color: #1a1a1a;
+            background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%);
+            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px; position: relative;
+        }
+
+        .float-tools {
+            position: absolute; top: 20px; background: rgba(30, 30, 30, 0.95); padding: 8px 20px; border-radius: 50px;
+            display: flex; gap: 10px; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        .tool-icon { 
+            color: #ccc; font-size: 16px; cursor: pointer; padding: 0; border:none; background:none; transition:0.2s; 
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .tool-icon:hover { color: #fff; background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .tool-icon.delete:hover { color: var(--danger); background: rgba(244, 67, 54, 0.1); }
+        .tool-icon.save-png { color: var(--success); }
+        .tool-icon.save-png:hover { background: rgba(76, 175, 80, 0.1); }
+        .tool-icon.save-svg { color: #FF9800; }
+        .tool-icon.save-svg:hover { background: rgba(255, 152, 0, 0.1); }
+        
+        .sep { width: 1px; background: #555; height: 20px; margin: 8px 4px; }
+
+        /* 属性面板 */
+        .props-panel { 
+            width: 260px; background: var(--bg-sidebar); border-left: 1px solid var(--border); 
+            display: flex; flex-direction: column; padding: 15px; gap: 15px; z-index: 20; box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+        }
+        .panel-card { background: var(--bg-tool); border-radius: 8px; padding: 15px; border: 1px solid #383838; }
+        .panel-head { font-size: 11px; color: #888; margin-bottom: 10px; font-weight: 600; display:flex; justify-content:space-between; }
+        
+        .size-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .size-group { display: flex; align-items: center; gap: 8px; }
+        .size-group label { font-size: 12px; color:#aaa; width: 20px; }
+        .size-input { width: 100%; background: #444; border: 1px solid #555; color: #fff; padding: 6px 8px; border-radius: 4px; font-size: 13px; }
+
+        .align-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .a-btn { background: #444; border:none; color: #ddd; padding: 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .a-btn:hover { background: #555; }
+        
+        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 8px; }
+        
+        /* 增强的色块样式，支持显示透明/白色 */
+        .c-dot { 
+            width: 30px; height: 30px; border-radius: 50%; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1); 
+            position: relative; cursor: pointer; overflow: hidden; 
+            background-color: #fff;
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 10px 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .c-dot:hover { transform: scale(1.15); box-shadow: 0 0 0 2px var(--accent); z-index: 2; }
+        .c-dot input { position: absolute; top:-50%; left:-50%; width: 200%; height: 200%; opacity: 0; cursor: pointer; }
+        
+        /* 图片调色板专用样式 */
+        .img-palette-tag { font-size: 9px; color: #777; margin-bottom: 5px; display: block; }
+        .tolerance-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid #444; }
+        .tolerance-range { width: 100%; accent-color: var(--accent); cursor: pointer; display: block; margin-top:5px; height: 4px; border-radius: 2px;}
+
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 12px 30px; border-radius: 25px;
+            font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .status-bar {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(30,30,30,0.8); padding: 8px 20px; border-radius: 20px;
+            font-size: 12px; color: #aaa; backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; pointer-events: none;
+        }
+        .status-item i { color: var(--accent); margin-right: 5px; }
+        
+        .grid-toggle {
+            position: absolute; bottom: 20px; right: 20px; background: rgba(30,30,30,0.8);
+            padding: 8px 15px; border-radius: 20px; font-size: 12px; color: #ccc;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+            display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+        }
+        .grid-toggle:hover { background: rgba(55, 148, 255, 0.2); color: #fff; }
+        .grid-toggle.active { background: rgba(55, 148, 255, 0.3); color: var(--accent-light); border-color: var(--accent); }
+        
+        .hint {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #555; font-size: 18px; text-align: center; max-width: 300px;
+            line-height: 1.5; pointer-events: none; opacity: 0.7;
+        }
+        .hint strong { color: var(--accent); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area"><i class="fas fa-shapes logo-icon"></i> &nbsp; GRAPHIC PRO</div>
+        
+        <div class="text-tool-box">
+            <div class="panel-head" style="color:#ddd; margin-bottom:10px;">文字工坊</div>
+            <div class="tool-row">
+                <input type="text" id="txtInput" class="std-input" placeholder="输入内容..." value="智能辅助设计">
+            </div>
+            <div class="tool-row">
+                <input type="number" id="txtSize" class="std-input" value="40" min="8" max="200" title="字号" style="width:80px">
+                <button class="icon-btn" id="btnBold" onclick="toggleStyle(this)" title="粗体"><i class="fas fa-bold"></i></button>
+                <button class="icon-btn" id="btnItalic" onclick="toggleStyle(this)" title="斜体"><i class="fas fa-italic"></i></button>
+                <button class="btn-main" onclick="addText()" style="width:auto; flex:1; margin:0; padding:8px;">添加</button>
+            </div>
+        </div>
+
+        <div class="upload-box">
+            <label class="btn-main">
+                <i class="fas fa-cloud-upload-alt"></i> 上传素材
+                <input type="file" id="fileIn" accept="image/*, .svg" style="display:none">
+            </label>
+        </div>
+        <div class="library-container" id="lib-root"></div>
+    </div>
+
+    <div class="workspace">
+        <div class="float-tools">
+            <button class="tool-icon delete" onclick="act('del')" title="删除 (Delete)"><i class="fas fa-trash"></i></button>
+            <button class="tool-icon" onclick="act('copy')" title="复制 (Ctrl+C)"><i class="fas fa-copy"></i></button>
+            <div class="sep"></div>
+            <button class="tool-icon" onclick="act('group')" title="成组 (Ctrl+G)"><i class="fas fa-object-group"></i></button>
+            <button class="tool-icon" onclick="act('ungroup')" title="解组 (Ctrl+Shift+G)"><i class="fas fa-object-ungroup"></i></button>
+            <div class="sep"></div>
+            <button class="tool-icon" onclick="act('top')" title="置顶"><i class="fas fa-arrow-up"></i></button>
+            <button class="tool-icon" onclick="act('bottom')" title="置底"><i class="fas fa-arrow-down"></i></button>
+            <div class="sep"></div>
+            <button class="tool-icon save-png" onclick="act('savePng')" title="导出透明PNG"><i class="fas fa-image"></i></button>
+            <button class="tool-icon save-svg" onclick="act('saveSvg')" title="导出SVG矢量图"><i class="fas fa-bezier-curve"></i></button>
+        </div>
+        
+        <div class="canvas-bg">
+            <canvas id="c"></canvas>
+            <div class="hint" id="canvasHint">点击左侧面板添加元素<br>或<strong>拖入图片</strong>开始设计</div>
+        </div>
+        
+        <div id="toast">Ready</div>
+        
+        <div class="status-bar">
+            <div class="status-item"><i class="fas fa-mouse-pointer"></i> 选择: <span id="selectedObj">无</span></div>
+            <div class="status-item"><i class="fas fa-layer-group"></i> 图层: <span id="objCount">0</span></div>
+            <div class="status-item"><i class="fas fa-expand"></i> 画布: 800×800px</div>
+        </div>
+        
+        <div class="grid-toggle" id="gridToggle" onclick="toggleGrid()">
+            <i class="fas fa-th"></i> 网格参考
+        </div>
+    </div>
+
+    <div class="props-panel">
+        <div class="panel-card">
+            <div class="panel-head">尺寸 (px)</div>
+            <div class="size-inputs">
+                <div class="size-group">
+                    <label>W</label>
+                    <input type="number" id="inpW" class="size-input" onchange="setSize('w', this.value)" placeholder="宽度">
+                </div>
+                <div class="size-group">
+                    <label>H</label>
+                    <input type="number" id="inpH" class="size-input" onchange="setSize('h', this.value)" placeholder="高度">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-head">对齐</div>
+            <div class="align-btns">
+                <button class="a-btn" onclick="align('left')"><i class="fas fa-align-left"></i></button>
+                <button class="a-btn" onclick="align('center')"><i class="fas fa-align-center"></i></button>
+                <button class="a-btn" onclick="align('right')"><i class="fas fa-align-right"></i></button>
+                <button class="a-btn" onclick="align('top')"><i class="fas fa-align-left fa-rotate-90"></i></button>
+                <button class="a-btn" onclick="align('middle')"><i class="fas fa-align-center fa-rotate-90"></i></button>
+                <button class="a-btn" onclick="align('bottom')"><i class="fas fa-align-right fa-rotate-90"></i></button>
+            </div>
+        </div>
+        
+        <div class="panel-card">
+            <div class="panel-head">透明度 <span id="op-val">100%</span></div>
+            <input type="range" style="width:100%; accent-color:var(--accent)" min="0" max="1" step="0.1" value="1" oninput="setOpacity(this.value)">
+        </div>
+        
+        <div class="panel-card" id="color-box" style="display:none">
+            <div class="panel-head">色彩管理</div>
+            
+            <div id="img-controls" style="display:none">
+                <span class="img-palette-tag">图片主色 (点击修改):</span>
+                <div class="color-grid" id="color-list"></div>
+                
+                <div class="tolerance-box">
+                    <div class="panel-head">
+                        替换容差 
+                        <span id="tol-val" style="color:var(--accent)">15%</span>
+                    </div>
+                    <input type="range" id="toleranceRange" class="tolerance-range" min="0.01" max="0.6" step="0.01" value="0.15">
+                    <div style="font-size:10px; color:#666; margin-top:5px; line-height: 1.4;">
+                        数值越大，替换范围越广
+                    </div>
+                </div>
+            </div>
+            
+            <div id="vec-controls" style="display:none">
+                <div class="color-grid" id="vec-list"></div>
+            </div>
+        </div>
+        
+        <div class="panel-card">
+            <div class="panel-head">智能辅助</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" id="snapToggle" checked style="accent-color: var(--accent);"> 智能吸附
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" id="showGuidesToggle" checked style="accent-color: var(--accent);"> 显示对齐线
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 Canvas
+        const canvas = new fabric.Canvas('c', { 
+            width: 800, height: 800, preserveObjectStacking: true, backgroundColor: null,
+            selectionColor: 'rgba(55, 148, 255, 0.3)', selectionBorderColor: '#3794ff', selectionLineWidth: 2, selectionDashArray: [5, 5]
+        });
+        
+        let isGridActive = false;
+        let gridGroup = null;
+
+        // UI交互: 状态栏更新
+        function updateStatus() {
+            const sel = canvas.getActiveObject();
+            let label = '无';
+            if (sel) {
+                if (sel.type === 'activeSelection') label = '多选对象';
+                else if (sel.type === 'group') label = '组合/SVG';
+                else if (sel.type === 'image') label = '位图';
+                else if (sel.type === 'path') label = '路径';
+                else label = '文本';
+            }
+            document.getElementById('selectedObj').textContent = label;
+            document.getElementById('objCount').textContent = canvas.getObjects().filter(o => !o.isGrid).length;
+        }
+        
+        canvas.on('object:added', () => { document.getElementById('canvasHint').style.display = 'none'; updateStatus(); });
+        canvas.on('selection:cleared', updateStatus);
+        canvas.on('selection:created', updateStatus);
+        canvas.on('selection:updated', updateStatus);
+
+        // --- 功能函数区 ---
+
+        // 1. 网格系统
+        function toggleGrid() {
+            isGridActive = !isGridActive;
+            const btn = document.getElementById('gridToggle');
+            
+            if (isGridActive) {
+                btn.classList.add('active');
+                drawGrid();
+            } else {
+                btn.classList.remove('active');
+                if(gridGroup) { canvas.remove(gridGroup); gridGroup = null; }
+            }
+        }
+
+        function drawGrid() {
+            if(gridGroup) canvas.remove(gridGroup);
+            const gridSize = 40;
+            const lines = [];
+            const opts = { stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1, selectable: false, evented: false };
+            
+            for(let i=0; i < canvas.width/gridSize; i++) {
+                lines.push(new fabric.Line([i*gridSize, 0, i*gridSize, canvas.height], opts));
+            }
+            for(let i=0; i < canvas.height/gridSize; i++) {
+                lines.push(new fabric.Line([0, i*gridSize, canvas.width, i*gridSize], opts));
+            }
+            
+            gridGroup = new fabric.Group(lines, { selectable: false, evented: false, excludeFromExport: true });
+            gridGroup.isGrid = true;
+            canvas.add(gridGroup);
+            gridGroup.sendToBack();
+        }
+
+        // 2. 导出核心逻辑 (PNG & SVG)
+        function exportContent(type) {
+            const objects = canvas.getObjects().filter(o => !o.isGrid && !o.excludeFromExport);
+            if(objects.length === 0) { showToast('画布为空，无法导出'); return; }
+
+            canvas.discardActiveObject(); 
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            objects.forEach(o => {
+                const r = o.getBoundingRect(true, true);
+                if(r.left < minX) minX = r.left;
+                if(r.top < minY) minY = r.top;
+                if(r.left + r.width > maxX) maxX = r.left + r.width;
+                if(r.top + r.height > maxY) maxY = r.top + r.height;
+            });
+
+            const padding = 20;
+            minX -= padding; minY -= padding;
+            maxX += padding; maxY += padding;
+            const w = maxX - minX;
+            const h = maxY - minY;
+
+            if (type === 'svg') {
+                const svgData = canvas.toSVG({
+                    viewBox: { x: minX, y: minY, width: w, height: h },
+                    width: w + 'px',
+                    height: h + 'px'
+                });
+                const blob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+                const url = URL.createObjectURL(blob);
+                downloadFile(url, `design-${Date.now()}.svg`);
+            } else {
+                const prevVpt = canvas.viewportTransform;
+                const prevW = canvas.width;
+                const prevH = canvas.height;
+                const prevBg = canvas.backgroundColor;
+
+                canvas.setWidth(w);
+                canvas.setHeight(h);
+                canvas.viewportTransform = [1, 0, 0, 1, -minX, -minY];
+                canvas.backgroundColor = null;
+                
+                const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2, enableRetinaScaling: true });
+                
+                canvas.setWidth(prevW);
+                canvas.setHeight(prevH);
+                canvas.viewportTransform = prevVpt;
+                canvas.backgroundColor = prevBg;
+                canvas.requestRenderAll();
+                
+                downloadFile(dataURL, `design-${Date.now()}.png`);
+            }
+            showToast(`已导出 ${type.toUpperCase()}`);
+        }
+
+        function downloadFile(url, name) {
+            const a = document.createElement('a'); a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        // 3. 操作总控
+        function act(k) {
+            const o = canvas.getActiveObject();
+            if(k === 'savePng') return exportContent('png');
+            if(k === 'saveSvg') return exportContent('svg');
+
+            if(!o && k !== 'save') return;
+            
+            if(k === 'del') {
+                const objs = canvas.getActiveObjects();
+                if(objs.length) {
+                    canvas.discardActiveObject();
+                    objs.forEach(x => canvas.remove(x));
+                }
+            }
+            if(k === 'copy' && o) {
+                o.clone(c => {
+                    canvas.discardActiveObject();
+                    c.set({left: c.left + 20, top: c.top + 20, evented: true});
+                    if (c.type === 'activeSelection') {
+                        c.canvas = canvas;
+                        c.forEachObject(x => canvas.add(x));
+                        c.setCoords();
+                    } else canvas.add(c);
+                    canvas.setActiveObject(c);
+                    canvas.requestRenderAll();
+                });
+            }
+            if(k === 'group' && o?.type === 'activeSelection') { o.toGroup(); canvas.requestRenderAll(); }
+            if(k === 'ungroup' && o?.type === 'group') { o.toActiveSelection(); canvas.requestRenderAll(); }
+            if(k === 'top') o.bringToFront();
+            if(k === 'bottom') o.sendToBack();
+            if(isGridActive && gridGroup) gridGroup.sendToBack();
+        }
+
+        // --- 核心修复：添加自定义滤镜 ReplaceColor ---
+        fabric.Image.filters.ReplaceColor = fabric.util.createClass(fabric.Image.filters.BaseFilter, {
+            type: 'ReplaceColor',
+            
+            fragmentSource: `
+                precision highp float;
+                uniform sampler2D uTexture;
+                uniform vec4 uSourceColor;
+                uniform vec4 uTargetColor;
+                uniform float uThreshold;
+                varying vec2 vTexCoord;
+
+                void main() {
+                    vec4 color = texture2D(uTexture, vTexCoord);
+                    // uSourceColor 和 uTargetColor 已经由 JS 归一化为 0.0-1.0
+                    float dist = distance(color.rgb, uSourceColor.rgb);
+                    if (dist < uThreshold) {
+                        gl_FragColor = vec4(uTargetColor.rgb, color.a);
+                    } else {
+                        gl_FragColor = color;
+                    }
+                }
+            `,
+
+            applyTo2d: function(options) {
+                var data = options.imageData.data, len = data.length,
+                    threshold = this.threshold * 255 * 1.5,
+                    s = this.sourceColor, t = this.targetColor;
+
+                for (var i = 0; i < len; i += 4) {
+                    var r = data[i], g = data[i+1], b = data[i+2];
+                    // 计算欧几里得距离
+                    var dist = Math.sqrt(
+                        Math.pow(r - s[0], 2) + 
+                        Math.pow(g - s[1], 2) + 
+                        Math.pow(b - s[2], 2)
+                    );
+                    if (dist < threshold) { 
+                        data[i] = t[0]; 
+                        data[i+1] = t[1]; 
+                        data[i+2] = t[2]; 
+                    }
+                }
+            },
+
+            mainParameter: 'threshold',
+            threshold: 0.15,
+            sourceColor: [0,0,0,255], 
+            targetColor: [255,0,0,255],
+
+            // 获取 WebGL 变量位置
+            getUniformLocations: function(gl, program) {
+                return {
+                    uSourceColor: gl.getUniformLocation(program, 'uSourceColor'),
+                    uTargetColor: gl.getUniformLocation(program, 'uTargetColor'),
+                    uThreshold: gl.getUniformLocation(program, 'uThreshold'),
+                };
+            },
+
+            // 发送数据到 GPU，必须使用 Float32Array 并预先归一化
+            sendUniformData: function(gl, uniformLocations) {
+                // 将 0-255 颜色转换为 0.0-1.0
+                var s = new Float32Array([
+                    this.sourceColor[0]/255, this.sourceColor[1]/255, this.sourceColor[2]/255, this.sourceColor[3]/255
+                ]);
+                var t = new Float32Array([
+                    this.targetColor[0]/255, this.targetColor[1]/255, this.targetColor[2]/255, this.targetColor[3]/255
+                ]);
+                
+                gl.uniform4fv(uniformLocations.uSourceColor, s);
+                gl.uniform4fv(uniformLocations.uTargetColor, t);
+                gl.uniform1f(uniformLocations.uThreshold, this.threshold);
+            },
+
+            toObject: function() {
+                return fabric.util.object.extend(this.callSuper('toObject'), {
+                    threshold: this.threshold, sourceColor: this.sourceColor, targetColor: this.targetColor
+                });
+            }
+        });
+        fabric.Image.filters.ReplaceColor.fromObject = fabric.Image.filters.BaseFilter.fromObject;
+
+        // --- 核心修复：颜色提取算法 (针对 SVG 边缘抗锯齿优化) ---
+        function extractDominantColors(imageElement) {
+            const c = document.createElement('canvas');
+            const ctx = c.getContext('2d');
+            
+            // 限制尺寸
+            const maxDimension = 300;
+            const scale = Math.min(1, maxDimension / Math.max(imageElement.width, imageElement.height));
+            const w = Math.floor(imageElement.width * scale); 
+            const h = Math.floor(imageElement.height * scale);
+            
+            c.width = w; c.height = h;
+            ctx.drawImage(imageElement, 0, 0, w, h);
+            
+            let data;
+            try {
+                data = ctx.getImageData(0, 0, w, h).data;
+            } catch(e) { return []; }
+
+            const clusters = []; 
+            
+            // [修改点 1] 增大容差阈值：从 35 改为 60
+            // 这会让边缘的杂色更容易被归并到主色中
+            const clusterThreshold = 60; 
+
+            // 步长
+            const step = 4 * 4; 
+
+            for (let i = 0; i < data.length; i += step) {
+                const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+                
+                // [修改点 2] 严格过滤透明度：从 50 改为 230
+                // 只处理几乎完全不透明的像素，彻底忽略 SVG 的抗锯齿边缘
+                if (a < 230) continue; 
+
+                let foundCluster = false;
+                
+                for (let j = 0; j < clusters.length; j++) {
+                    const cluster = clusters[j];
+                    const dist = Math.sqrt(
+                        Math.pow(r - cluster.r, 2) +
+                        Math.pow(g - cluster.g, 2) +
+                        Math.pow(b - cluster.b, 2)
+                    );
+
+                    if (dist < clusterThreshold) {
+                        cluster.r = (cluster.r * cluster.count + r) / (cluster.count + 1);
+                        cluster.g = (cluster.g * cluster.count + g) / (cluster.count + 1);
+                        cluster.b = (cluster.b * cluster.count + b) / (cluster.count + 1);
+                        cluster.count++;
+                        foundCluster = true;
+                        break;
+                    }
+                }
+
+                if (!foundCluster) {
+                    clusters.push({ r: r, g: g, b: b, count: 1 });
+                }
+            }
+
+            // [修改点 3] 过滤噪点：剔除占比极小的颜色 (例如小于总采样点 1% 的杂色)
+            const totalValidPixels = clusters.reduce((sum, c) => sum + c.count, 0);
+            
+            return clusters
+                .filter(c => (c.count / totalValidPixels) > 0.01) // 仅保留占比 > 1% 的颜色
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 6)
+                .map(c => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)})`);
+        }
+
+        // --- 核心更新：属性更新逻辑 (整合图片/矢量模式) ---
+        function updateProps() {
+            const act = canvas.getActiveObject();
+            const box = document.getElementById('color-box');
+            const imgControls = document.getElementById('img-controls');
+            const vecControls = document.getElementById('vec-controls');
+            
+            if(!act) { 
+                box.style.display='none'; 
+                document.getElementById('inpW').value=''; 
+                document.getElementById('inpH').value=''; 
+                return; 
+            }
+            
+            box.style.display='block';
+            document.getElementById('inpW').value = Math.round(act.getScaledWidth());
+            document.getElementById('inpH').value = Math.round(act.getScaledHeight());
+            document.querySelector('input[type=range]').value = act.opacity;
+
+            // >>> 图片模式
+            if (act.type === 'image') {
+                imgControls.style.display = 'block';
+                vecControls.style.display = 'none';
+                const list = document.getElementById('color-list');
+                list.innerHTML = '';
+                
+                const colors = extractDominantColors(act.getElement());
+                
+                if (colors.length === 0) {
+                    list.innerHTML = '<div style="font-size:12px;color:#666;grid-column:span 5;text-align:center;">无法提取颜色<br>(图片全透明或受跨域限制)</div>';
+                }
+
+                colors.forEach(rgbStr => {
+                    const d = document.createElement('div');
+                    d.className = 'c-dot';
+                    d.style.background = `linear-gradient(0deg, ${rgbStr}, ${rgbStr}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=')`;
+                    d.title = `点击替换颜色: ${rgbStr}`;
+
+                    const input = document.createElement('input');
+                    input.type = 'color';
+                    const rgb = rgbStr.match(/\d+/g).map(Number);
+                    const hex = '#' + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
+                    input.value = hex;
+
+                    input.addEventListener('input', (e) => {
+                        const newHex = e.target.value;
+                        const newRgb = new fabric.Color(newHex).getSource();
+                        const sourceRgb = rgb; 
+
+                        // 清理同类旧滤镜
+                        act.filters = act.filters.filter(f => {
+                            if (f.type !== 'ReplaceColor') return true;
+                            const s = f.sourceColor;
+                            return !(Math.abs(s[0]-sourceRgb[0])<5 && Math.abs(s[1]-sourceRgb[1])<5 && Math.abs(s[2]-sourceRgb[2])<5);
+                        });
+
+                        let tolerance = parseFloat(document.getElementById('toleranceRange').value);
+
+                        const filter = new fabric.Image.filters.ReplaceColor({
+                            threshold: tolerance,
+                            sourceColor: [sourceRgb[0], sourceRgb[1], sourceRgb[2], 255],
+                            targetColor: [newRgb[0], newRgb[1], newRgb[2], 255]
+                        });
+
+                        act.filters.push(filter);
+                        act.applyFilters();
+                        
+                        // 强制刷新
+                        act.dirty = true;
+                        canvas.requestRenderAll();
+                        
+                        d.style.background = newHex;
+                    });
+
+                    d.appendChild(input);
+                    list.appendChild(d);
+                });
+
+                const range = document.getElementById('toleranceRange');
+                range.oninput = function() {
+                    document.getElementById('tol-val').textContent = Math.round(this.value * 100) + '%';
+                };
+                range.onchange = function() {
+                    const val = parseFloat(this.value);
+                    let updated = false;
+                    act.filters.forEach(f => {
+                        if(f.type === 'ReplaceColor') { f.threshold = val; updated = true; }
+                    });
+                    if(updated) { 
+                        act.applyFilters(); 
+                        act.dirty = true; 
+                        canvas.requestRenderAll(); 
+                    }
+                };
+
+            } 
+            // >>> 矢量模式 (保留原功能，修复黑色幽灵问题)
+            else {
+                imgControls.style.display = 'none';
+                vecControls.style.display = 'block';
+                const list = document.getElementById('vec-list');
+                list.innerHTML = '';
+                
+                const colors = new Set();
+                
+                // 辅助函数：严格验证颜色有效性
+                const isValidColor = (c) => {
+                    if (!c || typeof c !== 'string') return false;
+                    if (c === 'none' || c === 'transparent') return false;
+                    // 排除完全透明的 rgba(x,x,x,0)
+                    if (c.replace(/\s/g, '').endsWith(',0)')) return false;
+                    return true;
+                };
+
+                function collect(o) {
+                    if (o.visible === false || o.opacity === 0) return;
+                    
+                    // 仅收集有效的填充色
+                    if(isValidColor(o.fill) && o.fillOpacity !== 0) colors.add(o.fill);
+                    
+                    // 仅收集有效的描边色 (宽度>0且不透明)
+                    if(isValidColor(o.stroke) && o.strokeWidth > 0 && o.strokeOpacity !== 0) colors.add(o.stroke);
+                    
+                    if(o.getObjects) o.getObjects().forEach(collect);
+                }
+                collect(act);
+
+                colors.forEach(c => {
+                    const d = document.createElement('div'); d.className='c-dot'; 
+                    d.style.background = c;
+                    const i = document.createElement('input'); i.type='color'; 
+                    try { i.value = new fabric.Color(c).toHex() ? '#'+new fabric.Color(c).toHex() : '#000000'; } catch(e){}
+                    
+                    i.oninput = (e) => {
+                        const nv = e.target.value; d.style.background = nv;
+                        const apply = (o) => {
+                            if(o.fill===c) o.set('fill', nv);
+                            if(o.stroke===c) o.set('stroke', nv);
+                            if(o.getObjects) o.getObjects().forEach(apply);
+                        };
+                        apply(act);
+                        canvas.requestRenderAll();
+                    };
+                    d.appendChild(i); list.appendChild(d);
+                });
+            }
+        }
+        
+        canvas.on('object:scaling', updateProps);
+        canvas.on('selection:created', updateProps);
+        canvas.on('selection:updated', updateProps);
+
+        // --- 素材数据 (保留原功能) ---
+        const pathDB = {
+            basic: ["M3 3h18v18H3z", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", "M12 2L2 22h20L12 2z","M19 13H5v-2h14v2z", "M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9z", "M22 18H2l4-12h12z", "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"],
+            icons: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z", "M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z", "M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8z", "M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"],
+            creative: ["M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z", "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z", "M12 6c3.87 0 7 3.13 7 7 0 1.25-.34 2.42-.93 3.42l-1.43-1.43c.22-.61.36-1.27.36-1.99 0-2.76-2.24-5-5-5s-5 2.24-5 5c0 .72.14 1.38.36 1.99l-1.43 1.43C5.34 15.42 5 14.25 5 13c0-3.87 3.13-7 7-7z"]
+        };
+        const categories = { "基础形状": pathDB.basic, "常用图标": pathDB.icons, "创意图形": pathDB.creative };
+
+        function initSidebar() {
+            const container = document.getElementById('lib-root');
+            if(!container) return;
+            Object.keys(categories).forEach((key, index) => {
+                const item = document.createElement('div'); item.className = 'accordion-item';
+                const header = document.createElement('div'); header.className = 'accordion-header';
+                header.innerHTML = `<span>${key}</span> <i class="fas fa-chevron-down"></i>`;
+                const content = document.createElement('div'); content.className = 'accordion-content';
+                const grid = document.createElement('div'); grid.className = 'assets-grid';
+                categories[key].forEach(d => {
+                    const el = document.createElement('div'); el.className = 'asset-item';
+                    el.innerHTML = `<svg viewBox="0 0 24 24"><path d="${d}"></path></svg>`;
+                    el.onclick = () => addPath(d); grid.appendChild(el);
+                });
+                content.appendChild(grid); item.appendChild(header); item.appendChild(content); container.appendChild(item);
+                header.onclick = () => {
+                    const isOpen = content.classList.contains('show');
+                    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('show'));
+                    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+                    if(!isOpen) { content.classList.add('show'); header.classList.add('active'); }
+                };
+                if(index === 0) { content.classList.add('show'); header.classList.add('active'); }
+            });
+        }
+        window.onload = initSidebar;
+
+        // --- 辅助线与吸附逻辑 ---
+        let snapEnabled = true;
+        let guidesVisible = true;
+        let guides = [];
+        const SNAP_THRESHOLD = 8;
+        const GUIDE_COLOR = '#00e0ff';
+
+        function clearGuides() { guides.forEach(g => canvas.remove(g)); guides = []; }
+        function createGuide(x, y, isV, dashed=false) {
+            const line = new fabric.Line(isV ? [x, -1000, x, 1000] : [-1000, y, 1000, y], {
+                stroke: GUIDE_COLOR, strokeWidth: dashed?1:1.5, strokeDashArray: dashed?[5,5]:null,
+                selectable: false, evented: false, opacity: 0.8, excludeFromExport: true
+            });
+            canvas.add(line); guides.push(line);
+        }
+
+        canvas.on('object:moving', (e) => {
+            if(!snapEnabled) return;
+            const target = e.target;
+            clearGuides();
+            
+            const w = canvas.width, h = canvas.height;
+            const cx = w/2, cy = h/2;
+            const tBr = target.getBoundingRect(true);
+            const tCent = target.getCenterPoint();
+            let snapped = {x:false, y:false};
+
+            // 中心吸附
+            if(Math.abs(tCent.x - cx) < SNAP_THRESHOLD) {
+                target.set({left: cx - (tCent.x - target.left)});
+                if(guidesVisible) createGuide(cx, 0, true);
+                snapped.x = true;
+            }
+            if(Math.abs(tCent.y - cy) < SNAP_THRESHOLD) {
+                target.set({top: cy - (tCent.y - target.top)});
+                if(guidesVisible) createGuide(0, cy, false);
+                snapped.y = true;
+            }
+            // 简单对象间吸附
+            if(!snapped.x || !snapped.y) {
+                canvas.getObjects().forEach(obj => {
+                    if(obj===target || obj.isGrid || obj.excludeFromExport) return;
+                    const oCent = obj.getCenterPoint();
+                    if(!snapped.x && Math.abs(tCent.x - oCent.x) < SNAP_THRESHOLD) {
+                        target.set({left: oCent.x - (tCent.x - target.left)});
+                        if(guidesVisible) createGuide(oCent.x, 0, true, true);
+                        snapped.x = true;
+                    }
+                    if(!snapped.y && Math.abs(tCent.y - oCent.y) < SNAP_THRESHOLD) {
+                        target.set({top: oCent.y - (tCent.y - target.top)});
+                        if(guidesVisible) createGuide(0, oCent.y, false, true);
+                        snapped.y = true;
+                    }
+                });
+            }
+        });
+        canvas.on('mouse:up', clearGuides);
+
+        // --- 基础工具函数 ---
+        function addText() {
+            const txt = document.getElementById('txtInput').value || '双击编辑';
+            const size = parseInt(document.getElementById('txtSize').value) || 40;
+            const textObj = new fabric.IText(txt, {
+                left: canvas.width/2, top: canvas.height/2, fontSize: size,
+                fontWeight: document.getElementById('btnBold').classList.contains('active') ? 'bold':'normal',
+                fontStyle: document.getElementById('btnItalic').classList.contains('active') ? 'italic':'normal',
+                fill: '#3794ff', fontFamily: 'Inter, sans-serif', originX:'center', originY:'center'
+            });
+            canvas.add(textObj); canvas.setActiveObject(textObj);
+        }
+
+        function addPath(d) {
+            const path = new fabric.Path(d);
+            path.set({ fill: '#3794ff', scaleX: 3, scaleY: 3, left: canvas.width/2, top: canvas.height/2, originX: 'center', originY: 'center' });
+            canvas.add(path); canvas.setActiveObject(path);
+        }
+
+        function toggleStyle(btn) { btn.classList.toggle('active'); }
+        function align(p) {
+            const o = canvas.getActiveObject(); if(!o) return;
+            const w = canvas.width, h = canvas.height;
+            const b = o.getBoundingRect(true);
+            if(p=='left') o.set('left', o.left - b.left);
+            if(p=='right') o.set('left', w - (b.left+b.width) + o.left);
+            if(p=='center') o.centerH();
+            if(p=='top') o.set('top', o.top - b.top);
+            if(p=='bottom') o.set('top', h - (b.top+b.height) + o.top);
+            if(p=='middle') o.centerV();
+            o.setCoords(); canvas.requestRenderAll();
+        }
+
+        function setSize(type, val) {
+            const act = canvas.getActiveObject(); if(!act) return;
+            if(type=='w') act.scaleToWidth(parseInt(val));
+            if(type=='h') act.scaleToHeight(parseInt(val));
+            canvas.requestRenderAll();
+        }
+        function setOpacity(v) { 
+            const o = canvas.getActiveObject(); 
+            if(o) { o.set('opacity', parseFloat(v)); document.getElementById('op-val').textContent = Math.round(v*100)+'%'; canvas.requestRenderAll(); }
+        }
+
+        function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.style.opacity=1; setTimeout(()=>t.style.opacity=0, 2000); }
+        document.getElementById('snapToggle').addEventListener('change', function(){ snapEnabled = this.checked; });
+        document.getElementById('showGuidesToggle').addEventListener('change', function(){ guidesVisible = this.checked; });
+        
+        // 文件上传修复
+        document.getElementById('fileIn').onchange = (e) => {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                const d = ev.target.result;
+                // 修复：同时检查 MIME type 和 文件名后缀，强制进入矢量模式
+                if(f.type.includes('svg') || f.name.toLowerCase().endsWith('.svg')) {
+                    // SVG 导入优化：保留原始结构
+                    fabric.loadSVGFromURL(d, (obs, ops) => {
+                        const g = fabric.util.groupSVGElements(obs, ops);
+                        g.scaleToWidth(200); canvas.centerObject(g); canvas.add(g); canvas.setActiveObject(g);
+                        updateProps();
+                    });
+                } else {
+                    fabric.Image.fromURL(d, (img) => {
+                        img.scaleToWidth(300); canvas.centerObject(img); canvas.add(img); canvas.setActiveObject(img);
+                        updateProps();
+                    });
+                }
+            };
+            r.readAsDataURL(f);
+            // 清除 input value 允许重复上传同一文件
+            e.target.value = '';
+        };
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', e => {
+            if(e.target.tagName === 'INPUT') return;
+            if(e.key === 'Delete' || e.key === 'Backspace') act('del');
+            if((e.ctrlKey || e.metaKey) && e.key === 'c') act('copy');
+            if((e.ctrlKey || e.metaKey) && e.key === 'g') { e.preventDefault(); e.shiftKey ? act('ungroup') : act('group'); }
+        });
+    </script>
+</body>
+</html>
