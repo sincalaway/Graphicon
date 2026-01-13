@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphic Code Pro - 智能设计 (色彩提取修复版)</title>
+    <title>Graphic Code Pro - 智能设计 (吸附增强版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,10 +23,9 @@
             --danger: #f44336;
             --guide-color: #00e0ff;
         }
-
         * { box-sizing: border-box; user-select: none; outline: none; }
         body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-
+        
         /* 左侧侧边栏 */
         .sidebar {
             width: 320px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
@@ -38,8 +37,8 @@
             border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; position: relative;
         }
         .logo-icon { color: var(--accent); }
-        .logo-area::after { content: 'PRO'; position: absolute; right: 16px; background: var(--accent); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-
+        .logo-area::after { content: 'PRO+'; position: absolute; right: 16px; background: var(--accent); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        
         .text-tool-box { padding: 15px; border-bottom: 1px solid var(--border); background: #222; }
         .tool-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
         .std-input {
@@ -52,9 +51,9 @@
             background: var(--bg-tool); border: 1px solid #444; color: #ccc; width: 36px; height: 36px;
             border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
-        .icon-btn:hover { background: #444; color: #fff; transform: translateY(-2px); }
+        .icon-btn:hover { background: #444; color: #fff; transform: translateY(-2px); border-color: #666; }
         .icon-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 8px rgba(55, 148, 255, 0.5); }
-
+        
         .upload-box { padding: 12px; border-bottom: 1px solid var(--border); }
         .btn-main {
             width: 100%; padding: 12px; background: linear-gradient(90deg, #3794ff, #0060c2);
@@ -67,7 +66,7 @@
         .library-container { flex: 1; overflow-y: auto; padding-bottom: 20px; }
         .library-container::-webkit-scrollbar { width: 6px; }
         .library-container::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-
+        
         .accordion-item { border-bottom: 1px solid #333; }
         .accordion-header {
             width: 100%; padding: 12px 15px; background: #252525; color: var(--text-sub);
@@ -78,9 +77,10 @@
         .accordion-header.active { color: var(--accent); border-left: 3px solid var(--accent); background: #222; }
         .accordion-header i { transition: transform 0.3s; font-size: 12px; }
         .accordion-header.active i { transform: rotate(180deg); }
+        
         .accordion-content { display: none; padding: 10px; background: var(--bg-sidebar); }
         .accordion-content.show { display: block; }
-
+        
         .assets-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
         .asset-item {
             aspect-ratio: 1; background: var(--bg-tool); border-radius: 6px; display: flex; align-items: center; justify-content: center;
@@ -89,7 +89,7 @@
         .asset-item:hover { background: #444; border-color: var(--accent); transform: scale(1.1); z-index: 2; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
         .asset-item svg { width: 100%; height: 100%; fill: #bbb; display: block; transition: fill 0.2s; }
         .asset-item:hover svg { fill: var(--accent-light); }
-
+        
         /* 画布区域 */
         .workspace { flex: 1; position: relative; background: #0f0f0f; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .canvas-bg {
@@ -97,17 +97,26 @@
             background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%);
             background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px; position: relative;
         }
-
+        
         .float-tools {
             position: absolute; top: 20px; background: rgba(30, 30, 30, 0.95); padding: 8px 20px; border-radius: 50px;
             display: flex; gap: 10px; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); z-index: 100;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
+        /* Tooltip 样式 */
         .tool-icon { 
             color: #ccc; font-size: 16px; cursor: pointer; padding: 0; border:none; background:none; transition:0.2s; 
             width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative;
         }
         .tool-icon:hover { color: #fff; background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .tool-icon::after {
+            content: attr(title); position: absolute; top: 120%; left: 50%; transform: translateX(-50%);
+            background: #000; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px;
+            white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10;
+        }
+        .tool-icon:hover::after { opacity: 0.8; }
+        
         .tool-icon.delete:hover { color: var(--danger); background: rgba(244, 67, 54, 0.1); }
         .tool-icon.save-png { color: var(--success); }
         .tool-icon.save-png:hover { background: rgba(76, 175, 80, 0.1); }
@@ -115,7 +124,7 @@
         .tool-icon.save-svg:hover { background: rgba(255, 152, 0, 0.1); }
         
         .sep { width: 1px; background: #555; height: 20px; margin: 8px 4px; }
-
+        
         /* 属性面板 */
         .props-panel { 
             width: 260px; background: var(--bg-sidebar); border-left: 1px solid var(--border); 
@@ -128,14 +137,12 @@
         .size-group { display: flex; align-items: center; gap: 8px; }
         .size-group label { font-size: 12px; color:#aaa; width: 20px; }
         .size-input { width: 100%; background: #444; border: 1px solid #555; color: #fff; padding: 6px 8px; border-radius: 4px; font-size: 13px; }
-
         .align-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .a-btn { background: #444; border:none; color: #ddd; padding: 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
         .a-btn:hover { background: #555; }
         
         .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 8px; }
         
-        /* 增强的色块样式，支持显示透明/白色 */
         .c-dot { 
             width: 30px; height: 30px; border-radius: 50%; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1); 
@@ -148,11 +155,9 @@
         .c-dot:hover { transform: scale(1.15); box-shadow: 0 0 0 2px var(--accent); z-index: 2; }
         .c-dot input { position: absolute; top:-50%; left:-50%; width: 200%; height: 200%; opacity: 0; cursor: pointer; }
         
-        /* 图片调色板专用样式 */
         .img-palette-tag { font-size: 9px; color: #777; margin-bottom: 5px; display: block; }
         .tolerance-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid #444; }
         .tolerance-range { width: 100%; accent-color: var(--accent); cursor: pointer; display: block; margin-top:5px; height: 4px; border-radius: 2px;}
-
         #toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: var(--accent); color: white; padding: 12px 30px; border-radius: 25px;
@@ -185,8 +190,8 @@
         .hint strong { color: var(--accent); font-weight: 600; }
     </style>
 </head>
-<body>
 
+<body>
     <div class="sidebar">
         <div class="logo-area"><i class="fas fa-shapes logo-icon"></i> &nbsp; GRAPHIC PRO</div>
         
@@ -202,7 +207,6 @@
                 <button class="btn-main" onclick="addText()" style="width:auto; flex:1; margin:0; padding:8px;">添加</button>
             </div>
         </div>
-
         <div class="upload-box">
             <label class="btn-main">
                 <i class="fas fa-cloud-upload-alt"></i> 上传素材
@@ -211,9 +215,12 @@
         </div>
         <div class="library-container" id="lib-root"></div>
     </div>
-
     <div class="workspace">
         <div class="float-tools">
+            <button class="tool-icon" onclick="historyManager.undo()" title="撤销 (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+            <button class="tool-icon" onclick="historyManager.redo()" title="重做 (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+            <div class="sep"></div>
+            
             <button class="tool-icon delete" onclick="act('del')" title="删除 (Delete)"><i class="fas fa-trash"></i></button>
             <button class="tool-icon" onclick="act('copy')" title="复制 (Ctrl+C)"><i class="fas fa-copy"></i></button>
             <div class="sep"></div>
@@ -244,7 +251,6 @@
             <i class="fas fa-th"></i> 网格参考
         </div>
     </div>
-
     <div class="props-panel">
         <div class="panel-card">
             <div class="panel-head">尺寸 (px)</div>
@@ -259,7 +265,6 @@
                 </div>
             </div>
         </div>
-
         <div class="panel-card">
             <div class="panel-head">对齐</div>
             <div class="align-btns">
@@ -291,7 +296,7 @@
                     </div>
                     <input type="range" id="toleranceRange" class="tolerance-range" min="0.01" max="0.6" step="0.01" value="0.15">
                     <div style="font-size:10px; color:#666; margin-top:5px; line-height: 1.4;">
-                        数值越大，替换范围越广
+                        数值越大，替换范围越广，值：18%-30%
                     </div>
                 </div>
             </div>
@@ -324,7 +329,387 @@
         let isGridActive = false;
         let gridGroup = null;
 
-        // UI交互: 状态栏更新
+        // --- 模块 1: 历史记录管理器 (HistoryManager) ---
+        class HistoryManager {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.undoStack = [];
+                this.redoStack = [];
+                this.maxHistory = 50;
+                this.locked = false; // 锁：防止 undo/redo 过程中触发保存
+                this.currentState = JSON.stringify(canvas.toJSON(this.saveProps));
+            }
+
+            // 保存时包含的额外属性
+            get saveProps() { return ['selectable', 'evented', 'isGrid', 'excludeFromExport', 'id', 'filterId']; }
+
+            save() {
+                if (this.locked) return;
+                
+                const newState = JSON.stringify(this.canvas.toJSON(this.saveProps));
+                
+                // 去重优化：如果状态未变，不保存（解决无效点击产生的历史）
+                if (newState === this.currentState) return;
+
+                if (this.undoStack.length >= this.maxHistory) this.undoStack.shift();
+                this.undoStack.push(this.currentState);
+                
+                this.currentState = newState;
+                this.redoStack = []; // 清空重做栈
+            }
+
+            undo() {
+                if (this.undoStack.length === 0) {
+                    showToast("没有可撤销的操作");
+                    return;
+                }
+                this.locked = true;
+                this.redoStack.push(this.currentState);
+                const prevState = this.undoStack.pop();
+                this.currentState = prevState;
+                
+                this.loadState(prevState);
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) {
+                    showToast("没有可恢复的操作");
+                    return;
+                }
+                this.locked = true;
+                this.undoStack.push(this.currentState);
+                const nextState = this.redoStack.pop();
+                this.currentState = nextState;
+                
+                this.loadState(nextState);
+            }
+
+            loadState(json) {
+                this.canvas.loadFromJSON(json, () => {
+                    this.canvas.renderAll();
+                    this.locked = false;
+                    
+                    // 恢复后必须更新 UI 状态
+                    updateStatus();
+                    updateProps();
+                    
+                    // 重建网格（因为 loadFromJSON 会清空画布）
+                    if (isGridActive) drawGrid();
+                });
+            }
+        }
+        
+        const historyManager = new HistoryManager(canvas);
+
+        // 监听画布事件并挂钩到 HistoryManager
+        canvas.on('object:added', (e) => { 
+            document.getElementById('canvasHint').style.display = 'none'; 
+            updateStatus();
+            if (e.target && !e.target.isGrid && !e.target.excludeFromExport) {
+                historyManager.save();
+            }
+        });
+        canvas.on('object:modified', () => historyManager.save());
+        canvas.on('object:removed', () => historyManager.save());
+        canvas.on('selection:cleared', updateStatus);
+        canvas.on('selection:created', updateStatus);
+        canvas.on('selection:updated', updateStatus);
+
+
+        // --- 模块 2: 辅助线与吸附逻辑 (用户自定义增强版) ---
+        let snapEnabled = true;
+        let guidesVisible = true;
+        let guides = [];
+        const SNAP_THRESHOLD = 8;
+        const CANVAS_GUIDE_COLOR = '#00e0ff';
+        const OBJECT_GUIDE_COLOR = '#ff6b6b';
+
+        // 清除所有辅助线
+        function clearGuides() {
+            guides.forEach(g => canvas.remove(g));
+            guides = [];
+        }
+
+        // 创建辅助线
+        function createGuide(x, y, isVertical, options = {}) {
+            const { dashed = false, color = CANVAS_GUIDE_COLOR } = options;
+            const coords = isVertical 
+                ? [x, 0, x, canvas.height] 
+                : [0, y, canvas.width, y];
+            
+            const line = new fabric.Line(coords, {
+                stroke: color,
+                strokeWidth: dashed ? 1 : 1.5,
+                strokeDashArray: dashed ? [5, 5] : null,
+                selectable: false,
+                evented: false,
+                opacity: 0.8,
+                excludeFromExport: true,
+                objectCaching: false
+            });
+            
+            canvas.add(line);
+            guides.push(line);
+        }
+
+        canvas.on('object:moving', (e) => {
+            if (!snapEnabled) return;
+            
+            const target = e.target;
+            clearGuides();
+            
+            const canvasCenter = {
+                x: canvas.width / 2,
+                y: canvas.height / 2
+            };
+            
+            // 获取目标对象的原始位置
+            const targetBounds = target.getBoundingRect(false, true);
+            
+            const targetPoints = {
+                left: targetBounds.left,
+                right: targetBounds.left + targetBounds.width,
+                top: targetBounds.top,
+                bottom: targetBounds.top + targetBounds.height,
+                centerX: targetBounds.left + targetBounds.width / 2,
+                centerY: targetBounds.top + targetBounds.height / 2
+            };
+            
+            let snapOffsetX = 0;
+            let snapOffsetY = 0;
+            let snappedXType = null; // 'canvas-center', 'object-center', 'object-edge'
+            let snappedYType = null;
+            let alignedObjCenterX = null; // 对齐对象的中心X
+            let alignedObjCenterY = null; // 对齐对象的中心Y
+            
+            // 1. 检测X轴对齐
+            // 画布中心
+            if (Math.abs(targetPoints.centerX - canvasCenter.x) < SNAP_THRESHOLD) {
+                snapOffsetX = canvasCenter.x - targetPoints.centerX;
+                snappedXType = 'canvas-center';
+            }
+            
+            // 对象间对齐
+            if (!snappedXType) {
+                const objects = canvas.getObjects().filter(obj => 
+                    obj !== target && !obj.isGrid && !obj.excludeFromExport
+                );
+                
+                for (const obj of objects) {
+                    const objBounds = obj.getBoundingRect(false, true);
+                    const objPoints = {
+                        left: objBounds.left,
+                        right: objBounds.left + objBounds.width,
+                        centerX: objBounds.left + objBounds.width / 2
+                    };
+                    
+                    // 中心对齐
+                    if (Math.abs(targetPoints.centerX - objPoints.centerX) < SNAP_THRESHOLD) {
+                        snapOffsetX = objPoints.centerX - targetPoints.centerX;
+                        snappedXType = 'object-center';
+                        alignedObjCenterX = objPoints.centerX;
+                        break;
+                    }
+                    // 左边对齐
+                    else if (Math.abs(targetPoints.left - objPoints.left) < SNAP_THRESHOLD) {
+                        snapOffsetX = objPoints.left - targetPoints.left;
+                        snappedXType = 'object-edge';
+                        break;
+                    }
+                    // 右边对齐
+                    else if (Math.abs(targetPoints.right - objPoints.right) < SNAP_THRESHOLD) {
+                        snapOffsetX = objPoints.right - targetPoints.right;
+                        snappedXType = 'object-edge';
+                        break;
+                    }
+                }
+            }
+            
+            // 2. 检测Y轴对齐
+            // 画布中心
+            if (Math.abs(targetPoints.centerY - canvasCenter.y) < SNAP_THRESHOLD) {
+                snapOffsetY = canvasCenter.y - targetPoints.centerY;
+                snappedYType = 'canvas-center';
+            }
+            
+            // 对象间对齐
+            if (!snappedYType) {
+                const objects = canvas.getObjects().filter(obj => 
+                    obj !== target && !obj.isGrid && !obj.excludeFromExport
+                );
+                
+                for (const obj of objects) {
+                    const objBounds = obj.getBoundingRect(false, true);
+                    const objPoints = {
+                        top: objBounds.top,
+                        bottom: objBounds.top + objBounds.height,
+                        centerY: objBounds.top + objBounds.height / 2
+                    };
+                    
+                    // 中心对齐
+                    if (Math.abs(targetPoints.centerY - objPoints.centerY) < SNAP_THRESHOLD) {
+                        snapOffsetY = objPoints.centerY - targetPoints.centerY;
+                        snappedYType = 'object-center';
+                        alignedObjCenterY = objPoints.centerY;
+                        break;
+                    }
+                    // 顶边对齐
+                    else if (Math.abs(targetPoints.top - objPoints.top) < SNAP_THRESHOLD) {
+                        snapOffsetY = objPoints.top - targetPoints.top;
+                        snappedYType = 'object-edge';
+                        break;
+                    }
+                    // 底边对齐
+                    else if (Math.abs(targetPoints.bottom - objPoints.bottom) < SNAP_THRESHOLD) {
+                        snapOffsetY = objPoints.bottom - targetPoints.bottom;
+                        snappedYType = 'object-edge';
+                        break;
+                    }
+                }
+            }
+            
+            // 应用吸附偏移
+            if (snappedXType || snappedYType) {
+                target.set({
+                    left: target.left + snapOffsetX,
+                    top: target.top + snapOffsetY
+                });
+                target.setCoords();
+            }
+            
+            // 3. 绘制辅助线
+            if (guidesVisible) {
+                // 重新计算吸附后的位置
+                const finalBounds = target.getBoundingRect(false, true);
+                const finalPoints = {
+                    left: finalBounds.left,
+                    right: finalBounds.left + finalBounds.width,
+                    top: finalBounds.top,
+                    bottom: finalBounds.top + finalBounds.height,
+                    centerX: finalBounds.left + finalBounds.width / 2,
+                    centerY: finalBounds.top + finalBounds.height / 2
+                };
+                
+                // 判断是否显示中心十字线
+                const showObjectCenterCross = snappedXType === 'object-center' && snappedYType === 'object-center';
+                const showCanvasCenterCross = snappedXType === 'canvas-center' && snappedYType === 'canvas-center';
+                
+                // 情况1: 与对象中心完全对齐（X和Y都与对象中心对齐）
+                if (showObjectCenterCross) {
+                    createGuide(finalPoints.centerX, 0, true, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                    
+                    createGuide(0, finalPoints.centerY, false, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                }
+                // 情况2: 与画布中心完全对齐
+                else if (showCanvasCenterCross) {
+                    createGuide(finalPoints.centerX, 0, true, { 
+                        dashed: false, 
+                        color: CANVAS_GUIDE_COLOR 
+                    });
+                    
+                    createGuide(0, finalPoints.centerY, false, { 
+                        dashed: false, 
+                        color: CANVAS_GUIDE_COLOR 
+                    });
+                }
+                // 情况3: 其他情况显示3条辅助线
+                else {
+                    // 垂直辅助线（左、中、右）
+                    createGuide(finalPoints.left, 0, true, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                    
+                    // 中线特殊处理
+                    if (snappedXType === 'canvas-center') {
+                        createGuide(finalPoints.centerX, 0, true, { 
+                            dashed: false,
+                            color: CANVAS_GUIDE_COLOR
+                        });
+                    } else if (snappedXType === 'object-center') {
+                        createGuide(finalPoints.centerX, 0, true, { 
+                            dashed: true,
+                            color: OBJECT_GUIDE_COLOR
+                        });
+                    } else {
+                        createGuide(finalPoints.centerX, 0, true, { 
+                            dashed: true, 
+                            color: OBJECT_GUIDE_COLOR 
+                        });
+                    }
+                    
+                    createGuide(finalPoints.right, 0, true, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                    
+                    // 水平辅助线（上、中、下）
+                    createGuide(0, finalPoints.top, false, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                    
+                    // 中线特殊处理
+                    if (snappedYType === 'canvas-center') {
+                        createGuide(0, finalPoints.centerY, false, { 
+                            dashed: false,
+                            color: CANVAS_GUIDE_COLOR
+                        });
+                    } else if (snappedYType === 'object-center') {
+                        createGuide(0, finalPoints.centerY, false, { 
+                            dashed: true,
+                            color: OBJECT_GUIDE_COLOR
+                        });
+                    } else {
+                        createGuide(0, finalPoints.centerY, false, { 
+                            dashed: true, 
+                            color: OBJECT_GUIDE_COLOR 
+                        });
+                    }
+                    
+                    createGuide(0, finalPoints.bottom, false, { 
+                        dashed: true, 
+                        color: OBJECT_GUIDE_COLOR 
+                    });
+                }
+            }
+        });
+
+        canvas.on('mouse:up', () => {
+            clearGuides();
+        });
+
+        canvas.on('selection:cleared', () => {
+            clearGuides();
+        });
+
+        canvas.on('object:rotating', () => {
+            clearGuides();
+        });
+
+        canvas.on('object:scaling', () => {
+            clearGuides();
+        });
+
+        // 切换功能
+        function toggleSnap(enabled) {
+            snapEnabled = enabled;
+            if (!enabled) clearGuides();
+        }
+
+        function toggleGuides(visible) {
+            guidesVisible = visible;
+            if (!visible) clearGuides();
+        }
+
+
+        // --- 功能函数区 ---
         function updateStatus() {
             const sel = canvas.getActiveObject();
             let label = '无';
@@ -336,21 +721,12 @@
                 else label = '文本';
             }
             document.getElementById('selectedObj').textContent = label;
-            document.getElementById('objCount').textContent = canvas.getObjects().filter(o => !o.isGrid).length;
+            document.getElementById('objCount').textContent = canvas.getObjects().filter(o => !o.isGrid && !o.excludeFromExport).length;
         }
-        
-        canvas.on('object:added', () => { document.getElementById('canvasHint').style.display = 'none'; updateStatus(); });
-        canvas.on('selection:cleared', updateStatus);
-        canvas.on('selection:created', updateStatus);
-        canvas.on('selection:updated', updateStatus);
 
-        // --- 功能函数区 ---
-
-        // 1. 网格系统
         function toggleGrid() {
             isGridActive = !isGridActive;
             const btn = document.getElementById('gridToggle');
-            
             if (isGridActive) {
                 btn.classList.add('active');
                 drawGrid();
@@ -359,33 +735,27 @@
                 if(gridGroup) { canvas.remove(gridGroup); gridGroup = null; }
             }
         }
-
         function drawGrid() {
             if(gridGroup) canvas.remove(gridGroup);
             const gridSize = 40;
             const lines = [];
-            const opts = { stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1, selectable: false, evented: false };
-            
+            const opts = { stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1, selectable: false, evented: false, excludeFromExport: true };
             for(let i=0; i < canvas.width/gridSize; i++) {
                 lines.push(new fabric.Line([i*gridSize, 0, i*gridSize, canvas.height], opts));
             }
             for(let i=0; i < canvas.height/gridSize; i++) {
                 lines.push(new fabric.Line([0, i*gridSize, canvas.width, i*gridSize], opts));
             }
-            
             gridGroup = new fabric.Group(lines, { selectable: false, evented: false, excludeFromExport: true });
             gridGroup.isGrid = true;
             canvas.add(gridGroup);
             gridGroup.sendToBack();
         }
 
-        // 2. 导出核心逻辑 (PNG & SVG)
         function exportContent(type) {
             const objects = canvas.getObjects().filter(o => !o.isGrid && !o.excludeFromExport);
             if(objects.length === 0) { showToast('画布为空，无法导出'); return; }
-
             canvas.discardActiveObject(); 
-
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             objects.forEach(o => {
                 const r = o.getBoundingRect(true, true);
@@ -394,13 +764,11 @@
                 if(r.left + r.width > maxX) maxX = r.left + r.width;
                 if(r.top + r.height > maxY) maxY = r.top + r.height;
             });
-
             const padding = 20;
             minX -= padding; minY -= padding;
             maxX += padding; maxY += padding;
             const w = maxX - minX;
             const h = maxY - minY;
-
             if (type === 'svg') {
                 const svgData = canvas.toSVG({
                     viewBox: { x: minX, y: minY, width: w, height: h },
@@ -415,38 +783,30 @@
                 const prevW = canvas.width;
                 const prevH = canvas.height;
                 const prevBg = canvas.backgroundColor;
-
                 canvas.setWidth(w);
                 canvas.setHeight(h);
                 canvas.viewportTransform = [1, 0, 0, 1, -minX, -minY];
                 canvas.backgroundColor = null;
-                
                 const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2, enableRetinaScaling: true });
-                
                 canvas.setWidth(prevW);
                 canvas.setHeight(prevH);
                 canvas.viewportTransform = prevVpt;
                 canvas.backgroundColor = prevBg;
                 canvas.requestRenderAll();
-                
                 downloadFile(dataURL, `design-${Date.now()}.png`);
             }
             showToast(`已导出 ${type.toUpperCase()}`);
         }
-
         function downloadFile(url, name) {
             const a = document.createElement('a'); a.href = url; a.download = name;
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
-        // 3. 操作总控
         function act(k) {
             const o = canvas.getActiveObject();
             if(k === 'savePng') return exportContent('png');
             if(k === 'saveSvg') return exportContent('svg');
-
             if(!o && k !== 'save') return;
-            
             if(k === 'del') {
                 const objs = canvas.getActiveObjects();
                 if(objs.length) {
@@ -467,17 +827,16 @@
                     canvas.requestRenderAll();
                 });
             }
-            if(k === 'group' && o?.type === 'activeSelection') { o.toGroup(); canvas.requestRenderAll(); }
-            if(k === 'ungroup' && o?.type === 'group') { o.toActiveSelection(); canvas.requestRenderAll(); }
-            if(k === 'top') o.bringToFront();
-            if(k === 'bottom') o.sendToBack();
+            if(k === 'group' && o?.type === 'activeSelection') { o.toGroup(); canvas.requestRenderAll(); historyManager.save(); }
+            if(k === 'ungroup' && o?.type === 'group') { o.toActiveSelection(); canvas.requestRenderAll(); historyManager.save(); }
+            if(k === 'top') { o.bringToFront(); historyManager.save(); }
+            if(k === 'bottom') { o.sendToBack(); historyManager.save(); }
             if(isGridActive && gridGroup) gridGroup.sendToBack();
         }
 
-        // --- 核心修复：添加自定义滤镜 ReplaceColor ---
+        // --- 滤镜 & 颜色逻辑 ---
         fabric.Image.filters.ReplaceColor = fabric.util.createClass(fabric.Image.filters.BaseFilter, {
             type: 'ReplaceColor',
-            
             fragmentSource: `
                 precision highp float;
                 uniform sampler2D uTexture;
@@ -485,10 +844,8 @@
                 uniform vec4 uTargetColor;
                 uniform float uThreshold;
                 varying vec2 vTexCoord;
-
                 void main() {
                     vec4 color = texture2D(uTexture, vTexCoord);
-                    // uSourceColor 和 uTargetColor 已经由 JS 归一化为 0.0-1.0
                     float dist = distance(color.rgb, uSourceColor.rgb);
                     if (dist < uThreshold) {
                         gl_FragColor = vec4(uTargetColor.rgb, color.a);
@@ -497,34 +854,19 @@
                     }
                 }
             `,
-
             applyTo2d: function(options) {
                 var data = options.imageData.data, len = data.length,
                     threshold = this.threshold * 255 * 1.5,
                     s = this.sourceColor, t = this.targetColor;
-
                 for (var i = 0; i < len; i += 4) {
                     var r = data[i], g = data[i+1], b = data[i+2];
-                    // 计算欧几里得距离
-                    var dist = Math.sqrt(
-                        Math.pow(r - s[0], 2) + 
-                        Math.pow(g - s[1], 2) + 
-                        Math.pow(b - s[2], 2)
-                    );
+                    var dist = Math.sqrt(Math.pow(r - s[0], 2) + Math.pow(g - s[1], 2) + Math.pow(b - s[2], 2));
                     if (dist < threshold) { 
-                        data[i] = t[0]; 
-                        data[i+1] = t[1]; 
-                        data[i+2] = t[2]; 
+                        data[i] = t[0]; data[i+1] = t[1]; data[i+2] = t[2]; 
                     }
                 }
             },
-
-            mainParameter: 'threshold',
-            threshold: 0.15,
-            sourceColor: [0,0,0,255], 
-            targetColor: [255,0,0,255],
-
-            // 获取 WebGL 变量位置
+            mainParameter: 'threshold', threshold: 0.15, sourceColor: [0,0,0,255], targetColor: [255,0,0,255], filterId: null,
             getUniformLocations: function(gl, program) {
                 return {
                     uSourceColor: gl.getUniformLocation(program, 'uSourceColor'),
@@ -532,101 +874,65 @@
                     uThreshold: gl.getUniformLocation(program, 'uThreshold'),
                 };
             },
-
-            // 发送数据到 GPU，必须使用 Float32Array 并预先归一化
             sendUniformData: function(gl, uniformLocations) {
-                // 将 0-255 颜色转换为 0.0-1.0
-                var s = new Float32Array([
-                    this.sourceColor[0]/255, this.sourceColor[1]/255, this.sourceColor[2]/255, this.sourceColor[3]/255
-                ]);
-                var t = new Float32Array([
-                    this.targetColor[0]/255, this.targetColor[1]/255, this.targetColor[2]/255, this.targetColor[3]/255
-                ]);
-                
+                var s = new Float32Array([this.sourceColor[0]/255, this.sourceColor[1]/255, this.sourceColor[2]/255, this.sourceColor[3]/255]);
+                var t = new Float32Array([this.targetColor[0]/255, this.targetColor[1]/255, this.targetColor[2]/255, this.targetColor[3]/255]);
                 gl.uniform4fv(uniformLocations.uSourceColor, s);
                 gl.uniform4fv(uniformLocations.uTargetColor, t);
                 gl.uniform1f(uniformLocations.uThreshold, this.threshold);
             },
-
             toObject: function() {
                 return fabric.util.object.extend(this.callSuper('toObject'), {
-                    threshold: this.threshold, sourceColor: this.sourceColor, targetColor: this.targetColor
+                    threshold: this.threshold, sourceColor: this.sourceColor, targetColor: this.targetColor, filterId: this.filterId
                 });
             }
         });
         fabric.Image.filters.ReplaceColor.fromObject = fabric.Image.filters.BaseFilter.fromObject;
 
-        // --- 核心修复：颜色提取算法 (针对 SVG 边缘抗锯齿优化) ---
         function extractDominantColors(imageElement) {
-            const c = document.createElement('canvas');
-            const ctx = c.getContext('2d');
-            
-            // 限制尺寸
-            const maxDimension = 300;
-            const scale = Math.min(1, maxDimension / Math.max(imageElement.width, imageElement.height));
-            const w = Math.floor(imageElement.width * scale); 
-            const h = Math.floor(imageElement.height * scale);
-            
-            c.width = w; c.height = h;
-            ctx.drawImage(imageElement, 0, 0, w, h);
-            
-            let data;
             try {
-                data = ctx.getImageData(0, 0, w, h).data;
-            } catch(e) { return []; }
-
-            const clusters = []; 
-            
-            // [修改点 1] 增大容差阈值：从 35 改为 60
-            // 这会让边缘的杂色更容易被归并到主色中
-            const clusterThreshold = 60; 
-
-            // 步长
-            const step = 4 * 4; 
-
-            for (let i = 0; i < data.length; i += step) {
-                const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d');
+                // 性能优化：限制取样大小
+                const maxDimension = 200; 
+                const scale = Math.min(1, maxDimension / Math.max(imageElement.width, imageElement.height));
+                const w = Math.floor(imageElement.width * scale); 
+                const h = Math.floor(imageElement.height * scale);
+                c.width = w; c.height = h;
+                ctx.drawImage(imageElement, 0, 0, w, h);
+                const data = ctx.getImageData(0, 0, w, h).data; 
                 
-                // [修改点 2] 严格过滤透明度：从 50 改为 230
-                // 只处理几乎完全不透明的像素，彻底忽略 SVG 的抗锯齿边缘
-                if (a < 230) continue; 
-
-                let foundCluster = false;
-                
-                for (let j = 0; j < clusters.length; j++) {
-                    const cluster = clusters[j];
-                    const dist = Math.sqrt(
-                        Math.pow(r - cluster.r, 2) +
-                        Math.pow(g - cluster.g, 2) +
-                        Math.pow(b - cluster.b, 2)
-                    );
-
-                    if (dist < clusterThreshold) {
-                        cluster.r = (cluster.r * cluster.count + r) / (cluster.count + 1);
-                        cluster.g = (cluster.g * cluster.count + g) / (cluster.count + 1);
-                        cluster.b = (cluster.b * cluster.count + b) / (cluster.count + 1);
-                        cluster.count++;
-                        foundCluster = true;
-                        break;
+                const clusters = []; 
+                const clusterThreshold = 60; 
+                const step = 16; 
+                for (let i = 0; i < data.length; i += step * 4) {
+                    const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+                    if (a < 230) continue; 
+                    let foundCluster = false;
+                    for (let j = 0; j < clusters.length; j++) {
+                        const cluster = clusters[j];
+                        const dist = Math.sqrt(Math.pow(r - cluster.r, 2) + Math.pow(g - cluster.g, 2) + Math.pow(b - cluster.b, 2));
+                        if (dist < clusterThreshold) {
+                            cluster.r = (cluster.r * cluster.count + r) / (cluster.count + 1);
+                            cluster.g = (cluster.g * cluster.count + g) / (cluster.count + 1);
+                            cluster.b = (cluster.b * cluster.count + b) / (cluster.count + 1);
+                            cluster.count++;
+                            foundCluster = true; break;
+                        }
                     }
+                    if (!foundCluster) clusters.push({ r: r, g: g, b: b, count: 1 });
                 }
-
-                if (!foundCluster) {
-                    clusters.push({ r: r, g: g, b: b, count: 1 });
-                }
+                const totalValidPixels = clusters.reduce((sum, c) => sum + c.count, 0);
+                return clusters.filter(c => (c.count / totalValidPixels) > 0.01)
+                    .sort((a, b) => b.count - a.count).slice(0, 6)
+                    .map(c => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)})`);
+            } catch(e) {
+                console.warn("无法提取颜色 (CORS 限制)", e);
+                return [];
             }
-
-            // [修改点 3] 过滤噪点：剔除占比极小的颜色 (例如小于总采样点 1% 的杂色)
-            const totalValidPixels = clusters.reduce((sum, c) => sum + c.count, 0);
-            
-            return clusters
-                .filter(c => (c.count / totalValidPixels) > 0.01) // 仅保留占比 > 1% 的颜色
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 6)
-                .map(c => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)})`);
         }
 
-        // --- 核心更新：属性更新逻辑 (整合图片/矢量模式) ---
+        // --- 属性更新逻辑 (UI Sync) ---
         function updateProps() {
             const act = canvas.getActiveObject();
             const box = document.getElementById('color-box');
@@ -644,8 +950,7 @@
             document.getElementById('inpW').value = Math.round(act.getScaledWidth());
             document.getElementById('inpH').value = Math.round(act.getScaledHeight());
             document.querySelector('input[type=range]').value = act.opacity;
-
-            // >>> 图片模式
+            
             if (act.type === 'image') {
                 imgControls.style.display = 'block';
                 vecControls.style.display = 'none';
@@ -653,122 +958,89 @@
                 list.innerHTML = '';
                 
                 const colors = extractDominantColors(act.getElement());
-                
                 if (colors.length === 0) {
-                    list.innerHTML = '<div style="font-size:12px;color:#666;grid-column:span 5;text-align:center;">无法提取颜色<br>(图片全透明或受跨域限制)</div>';
+                    list.innerHTML = '<div style="font-size:12px;color:#666;grid-column:span 5;text-align:center;">无法提取颜色<br>(受跨域限制)</div>';
                 }
-
                 colors.forEach(rgbStr => {
-                    const d = document.createElement('div');
-                    d.className = 'c-dot';
+                    const d = document.createElement('div'); d.className = 'c-dot';
                     d.style.background = `linear-gradient(0deg, ${rgbStr}, ${rgbStr}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=')`;
-                    d.title = `点击替换颜色: ${rgbStr}`;
-
-                    const input = document.createElement('input');
-                    input.type = 'color';
+                    const input = document.createElement('input'); input.type = 'color';
                     const rgb = rgbStr.match(/\d+/g).map(Number);
-                    const hex = '#' + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
-                    input.value = hex;
-
+                    input.value = '#' + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
+                    
                     input.addEventListener('input', (e) => {
                         const newHex = e.target.value;
                         const newRgb = new fabric.Color(newHex).getSource();
-                        const sourceRgb = rgb; 
+                        const filterId = `replace_${rgb[0]}_${rgb[1]}_${rgb[2]}`;
+                        const existingFilter = (act.filters || []).find(f => f.type === 'ReplaceColor' && f.filterId === filterId);
 
-                        // 清理同类旧滤镜
-                        act.filters = act.filters.filter(f => {
-                            if (f.type !== 'ReplaceColor') return true;
-                            const s = f.sourceColor;
-                            return !(Math.abs(s[0]-sourceRgb[0])<5 && Math.abs(s[1]-sourceRgb[1])<5 && Math.abs(s[2]-sourceRgb[2])<5);
-                        });
-
-                        let tolerance = parseFloat(document.getElementById('toleranceRange').value);
-
-                        const filter = new fabric.Image.filters.ReplaceColor({
-                            threshold: tolerance,
-                            sourceColor: [sourceRgb[0], sourceRgb[1], sourceRgb[2], 255],
-                            targetColor: [newRgb[0], newRgb[1], newRgb[2], 255]
-                        });
-
-                        act.filters.push(filter);
-                        act.applyFilters();
-                        
-                        // 强制刷新
-                        act.dirty = true;
-                        canvas.requestRenderAll();
-                        
-                        d.style.background = newHex;
+                        if (existingFilter) {
+                            existingFilter.targetColor = [newRgb[0], newRgb[1], newRgb[2], 255];
+                            existingFilter.threshold = parseFloat(document.getElementById('toleranceRange').value);
+                        } else {
+                            act.filters.push(new fabric.Image.filters.ReplaceColor({
+                                threshold: parseFloat(document.getElementById('toleranceRange').value),
+                                sourceColor: [rgb[0], rgb[1], rgb[2], 255],
+                                targetColor: [newRgb[0], newRgb[1], newRgb[2], 255],
+                                filterId: filterId
+                            }));
+                        }
+                        act.applyFilters(); act.dirty = true; canvas.requestRenderAll();
+                        d.style.background = `linear-gradient(0deg, ${newHex}, ${newHex}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=')`;
                     });
-
-                    d.appendChild(input);
-                    list.appendChild(d);
+                    
+                    input.addEventListener('change', () => historyManager.save()); // 拖拽结束才保存
+                    d.appendChild(input); list.appendChild(d);
                 });
-
+                
                 const range = document.getElementById('toleranceRange');
                 range.oninput = function() {
                     document.getElementById('tol-val').textContent = Math.round(this.value * 100) + '%';
-                };
-                range.onchange = function() {
                     const val = parseFloat(this.value);
                     let updated = false;
                     act.filters.forEach(f => {
                         if(f.type === 'ReplaceColor') { f.threshold = val; updated = true; }
                     });
-                    if(updated) { 
-                        act.applyFilters(); 
-                        act.dirty = true; 
-                        canvas.requestRenderAll(); 
-                    }
+                    if(updated) { act.applyFilters(); act.dirty = true; canvas.requestRenderAll(); }
                 };
-
-            } 
-            // >>> 矢量模式 (保留原功能，修复黑色幽灵问题)
-            else {
+                range.onchange = () => historyManager.save();
+            } else {
                 imgControls.style.display = 'none';
                 vecControls.style.display = 'block';
                 const list = document.getElementById('vec-list');
                 list.innerHTML = '';
-                
                 const colors = new Set();
+                const isValidColor = (c) => c && c!=='none' && c!=='transparent' && !c.replace(/\s/g, '').endsWith(',0)');
                 
-                // 辅助函数：严格验证颜色有效性
-                const isValidColor = (c) => {
-                    if (!c || typeof c !== 'string') return false;
-                    if (c === 'none' || c === 'transparent') return false;
-                    // 排除完全透明的 rgba(x,x,x,0)
-                    if (c.replace(/\s/g, '').endsWith(',0)')) return false;
-                    return true;
-                };
-
                 function collect(o) {
                     if (o.visible === false || o.opacity === 0) return;
-                    
-                    // 仅收集有效的填充色
-                    if(isValidColor(o.fill) && o.fillOpacity !== 0) colors.add(o.fill);
-                    
-                    // 仅收集有效的描边色 (宽度>0且不透明)
-                    if(isValidColor(o.stroke) && o.strokeWidth > 0 && o.strokeOpacity !== 0) colors.add(o.stroke);
-                    
+                    if(isValidColor(o.fill)) colors.add(o.fill);
+                    if(isValidColor(o.stroke) && o.strokeWidth > 0) colors.add(o.stroke);
                     if(o.getObjects) o.getObjects().forEach(collect);
                 }
                 collect(act);
-
+                
                 colors.forEach(c => {
-                    const d = document.createElement('div'); d.className='c-dot'; 
-                    d.style.background = c;
+                    const d = document.createElement('div'); d.className='c-dot'; d.style.background = c;
                     const i = document.createElement('input'); i.type='color'; 
                     try { i.value = new fabric.Color(c).toHex() ? '#'+new fabric.Color(c).toHex() : '#000000'; } catch(e){}
                     
+                    let currentColor = c; // 闭包变量，保持当前正在修改的颜色状态
+
                     i.oninput = (e) => {
-                        const nv = e.target.value; d.style.background = nv;
+                        const nv = e.target.value; 
+                        d.style.background = nv; 
+                        let updated = false;
                         const apply = (o) => {
-                            if(o.fill===c) o.set('fill', nv);
-                            if(o.stroke===c) o.set('stroke', nv);
+                            if(o.fill === currentColor) { o.set('fill', nv); updated = true; }
+                            if(o.stroke === currentColor) { o.set('stroke', nv); updated = true; }
                             if(o.getObjects) o.getObjects().forEach(apply);
                         };
                         apply(act);
+                        if(updated) currentColor = nv; // 更新闭包变量，支持连续拖动
                         canvas.requestRenderAll();
                     };
+                    i.onchange = () => historyManager.save();
                     d.appendChild(i); list.appendChild(d);
                 });
             }
@@ -778,13 +1050,21 @@
         canvas.on('selection:created', updateProps);
         canvas.on('selection:updated', updateProps);
 
-        // --- 素材数据 (保留原功能) ---
+        // --- 静态数据 ---
         const pathDB = {
-            basic: ["M3 3h18v18H3z", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", "M12 2L2 22h20L12 2z","M19 13H5v-2h14v2z", "M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9z", "M22 18H2l4-12h12z", "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"],
-            icons: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z", "M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z", "M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8z", "M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"],
-            creative: ["M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z", "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z", "M12 6c3.87 0 7 3.13 7 7 0 1.25-.34 2.42-.93 3.42l-1.43-1.43c.22-.61.36-1.27.36-1.99 0-2.76-2.24-5-5-5s-5 2.24-5 5c0 .72.14 1.38.36 1.99l-1.43 1.43C5.34 15.42 5 14.25 5 13c0-3.87 3.13-7 7-7z"]
+            basic: ["M3 3h18v18H3z", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", "M12 2L2 22h20L12 2z","M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9z", "M22 18H2l4-12h12z", "M4 20h14l6-16H10z","M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z","M2 12l10-10 10 10-10 10z", "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z","M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z", "M19 13H5v-2h14v2z", "M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z","M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z", "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z","M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8z", "M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8z","M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z", "M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z","M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z", "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V6c0-1.1-.9-2-2-2z","M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z","M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z","M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2 11.5 2z","M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z","M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z", "M7 7h10c2.76 0 5 2.24 5 5s-2.24 5-5 5H7c-2.76 0-5-2.24-5-5s2.24-5 5-5zm0 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z", "M19 13H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2zM7 7h10v2H7V7z", "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z", "M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5zM5 6h14v3H5z", "M12 2L2 22h20L12 2z", "M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z","M4 18h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-3.17L15 4h-6L7.17 6H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2zM12 9c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z","M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z", "M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z", "M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z","M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z", "M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z","M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z","M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z","M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z","M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z","M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"],
+            medical: ["M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z", "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z", "M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z", "M6 13c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm6.66-2.92l4.95-4.95c.39-.39.39-1.02 0-1.41l-2.83-2.83c-.39-.39-1.02-.39-1.41 0L8.41 5.83c-.39.39-.39 1.02 0 1.41l4.24 4.24c.4.4 1.03.4 1.42 0z", "M10.5 13H8v-3h2.5V7.5h3V10H16v3h-2.5v2.5h-3V13zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z", "M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z", "M7 2v18h3v-2H9V2h5v16h-1v2h3V2z", "M14 6l-3.3 5.7L8 6z", "M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z","M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4"],
+            food: ["M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v16h2.5V6c0-1.31.94-2.5 2.25-2.5S23 4.69 23 6v16h1V6c0-1.86-1.28-3.41-3-3.86V2h-2v.14c-1.72.45-3 2-3 3.86z", "M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z", "M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z","M18 13v5.5c0 .83-.67 1.5-1.5 1.5h-9c-.83 0-1.5-.67-1.5-1.5V13c-1.1 0-2-.9-2-2v-2c0-1.1.9-2 2-2V6c0-2.21 1.79-4 4-4s4 1.79 4 4v1c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2z","M2 17h20v2H2zM4 8h16v7H4z","M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 5L12 10.59 16.57 5H7.43z", "M12 2C8.43 2 5.23 3.54 3.01 6L12 22l8.99-16C18.78 3.55 15.57 2 12 2zm-1 14h-2v-2h2v2zm0-4h-2V8h2v4z", "M17 10c.1 0 .19.01.28.01.94-1.98.54-4.4-1.12-5.96C14.77 2.62 12.87 2 11.05 2 7.02 2 3.65 4.96 3.06 8.87 2.38 8.46 1.7 8.16 1.02 8.01c-.05 1.95 1.05 3.73 2.76 4.75-.15 3.08 1.48 6.07 4.3 7.82L12 22l3.92-1.42c2.82-1.75 4.45-4.74 4.3-7.82 1.71-1.02 2.81-2.8 2.76-4.75-.68.15-1.36.45-2.04.86-.59-3.91-3.96-6.87-7.99-6.87-1.82 0-3.72.62-5.11 2.05-1.66 1.56-2.06 3.98-1.12 5.96.09 0 .18-.01.28-.01.95 0 1.83.25 2.58.68.75.43 1.34 1.05 1.68 1.78.34-.73.93-1.35 1.68-1.78.75-.43 1.63-.68 2.58-.68z"],
+            creative: ["M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z", "M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z", "M7 19h10V4H7v15zm-5-2h4v6H2v-6zM18 6v11h4V6h-4z", "M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24 5 5-5 5 2.24 5 5-2.24 5-5 5z"],
+            trad: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-4-8c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4-4-1.79-4-4zm2 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z", "M12 2C6.47 2 2 12 2 12s4.47 10 10 10 10-10 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0 0 1.5-2.5 8-2.5s8 2.5 8 2.5c0 4.41-3.59 8-8 8z", "M12 2C9 2 7 4 7 7v10c0 3 2 5 5 5s5-2 5-5V7c0-3-2-5-5-5zm0 18c-1.66 0-3-1.34-3-3V7c0-1.66 1.34-3 3-3s3 1.34 3 3v10c0 1.66-1.34 3-3 3z", "M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z", "M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"]
         };
-        const categories = { "基础形状": pathDB.basic, "常用图标": pathDB.icons, "创意图形": pathDB.creative };
+        const categories = { 
+            "基础形状": pathDB.basic, 
+            "医药健康": pathDB.medical, 
+            "餐饮美食": pathDB.food, 
+            "创意设计": pathDB.creative, 
+            "中国传统": pathDB.trad 
+        };
 
         function initSidebar() {
             const container = document.getElementById('lib-root');
@@ -810,67 +1090,7 @@
                 if(index === 0) { content.classList.add('show'); header.classList.add('active'); }
             });
         }
-        window.onload = initSidebar;
-
-        // --- 辅助线与吸附逻辑 ---
-        let snapEnabled = true;
-        let guidesVisible = true;
-        let guides = [];
-        const SNAP_THRESHOLD = 8;
-        const GUIDE_COLOR = '#00e0ff';
-
-        function clearGuides() { guides.forEach(g => canvas.remove(g)); guides = []; }
-        function createGuide(x, y, isV, dashed=false) {
-            const line = new fabric.Line(isV ? [x, -1000, x, 1000] : [-1000, y, 1000, y], {
-                stroke: GUIDE_COLOR, strokeWidth: dashed?1:1.5, strokeDashArray: dashed?[5,5]:null,
-                selectable: false, evented: false, opacity: 0.8, excludeFromExport: true
-            });
-            canvas.add(line); guides.push(line);
-        }
-
-        canvas.on('object:moving', (e) => {
-            if(!snapEnabled) return;
-            const target = e.target;
-            clearGuides();
-            
-            const w = canvas.width, h = canvas.height;
-            const cx = w/2, cy = h/2;
-            const tBr = target.getBoundingRect(true);
-            const tCent = target.getCenterPoint();
-            let snapped = {x:false, y:false};
-
-            // 中心吸附
-            if(Math.abs(tCent.x - cx) < SNAP_THRESHOLD) {
-                target.set({left: cx - (tCent.x - target.left)});
-                if(guidesVisible) createGuide(cx, 0, true);
-                snapped.x = true;
-            }
-            if(Math.abs(tCent.y - cy) < SNAP_THRESHOLD) {
-                target.set({top: cy - (tCent.y - target.top)});
-                if(guidesVisible) createGuide(0, cy, false);
-                snapped.y = true;
-            }
-            // 简单对象间吸附
-            if(!snapped.x || !snapped.y) {
-                canvas.getObjects().forEach(obj => {
-                    if(obj===target || obj.isGrid || obj.excludeFromExport) return;
-                    const oCent = obj.getCenterPoint();
-                    if(!snapped.x && Math.abs(tCent.x - oCent.x) < SNAP_THRESHOLD) {
-                        target.set({left: oCent.x - (tCent.x - target.left)});
-                        if(guidesVisible) createGuide(oCent.x, 0, true, true);
-                        snapped.x = true;
-                    }
-                    if(!snapped.y && Math.abs(tCent.y - oCent.y) < SNAP_THRESHOLD) {
-                        target.set({top: oCent.y - (tCent.y - target.top)});
-                        if(guidesVisible) createGuide(0, oCent.y, false, true);
-                        snapped.y = true;
-                    }
-                });
-            }
-        });
-        canvas.on('mouse:up', clearGuides);
-
-        // --- 基础工具函数 ---
+        
         function addText() {
             const txt = document.getElementById('txtInput').value || '双击编辑';
             const size = parseInt(document.getElementById('txtSize').value) || 40;
@@ -880,15 +1100,13 @@
                 fontStyle: document.getElementById('btnItalic').classList.contains('active') ? 'italic':'normal',
                 fill: '#3794ff', fontFamily: 'Inter, sans-serif', originX:'center', originY:'center'
             });
-            canvas.add(textObj); canvas.setActiveObject(textObj);
+            canvas.add(textObj); canvas.setActiveObject(textObj); historyManager.save();
         }
-
         function addPath(d) {
             const path = new fabric.Path(d);
             path.set({ fill: '#3794ff', scaleX: 3, scaleY: 3, left: canvas.width/2, top: canvas.height/2, originX: 'center', originY: 'center' });
-            canvas.add(path); canvas.setActiveObject(path);
+            canvas.add(path); canvas.setActiveObject(path); historyManager.save();
         }
-
         function toggleStyle(btn) { btn.classList.toggle('active'); }
         function align(p) {
             const o = canvas.getActiveObject(); if(!o) return;
@@ -900,57 +1118,65 @@
             if(p=='top') o.set('top', o.top - b.top);
             if(p=='bottom') o.set('top', h - (b.top+b.height) + o.top);
             if(p=='middle') o.centerV();
-            o.setCoords(); canvas.requestRenderAll();
+            o.setCoords(); historyManager.save(); canvas.requestRenderAll();
         }
-
         function setSize(type, val) {
             const act = canvas.getActiveObject(); if(!act) return;
             if(type=='w') act.scaleToWidth(parseInt(val));
             if(type=='h') act.scaleToHeight(parseInt(val));
-            canvas.requestRenderAll();
+            historyManager.save(); canvas.requestRenderAll();
         }
         function setOpacity(v) { 
             const o = canvas.getActiveObject(); 
-            if(o) { o.set('opacity', parseFloat(v)); document.getElementById('op-val').textContent = Math.round(v*100)+'%'; canvas.requestRenderAll(); }
+            if(o) { 
+                o.set('opacity', parseFloat(v)); 
+                document.getElementById('op-val').textContent = Math.round(v*100)+'%'; 
+                canvas.requestRenderAll(); 
+            }
         }
+        // 透明度拖拽结束时保存历史
+        document.querySelector('input[type=range]').addEventListener('change', () => historyManager.save());
 
-        function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.style.opacity=1; setTimeout(()=>t.style.opacity=0, 2000); }
-        document.getElementById('snapToggle').addEventListener('change', function(){ snapEnabled = this.checked; });
-        document.getElementById('showGuidesToggle').addEventListener('change', function(){ guidesVisible = this.checked; });
+        function showToast(m) { 
+            const t=document.getElementById('toast'); t.textContent=m; t.style.opacity=1; setTimeout(()=>t.style.opacity=0, 2000); 
+        }
         
-        // 文件上传修复
+        // 更新 UI 事件监听，以匹配新的吸附函数
+        document.getElementById('snapToggle').addEventListener('change', function(){ toggleSnap(this.checked); });
+        document.getElementById('showGuidesToggle').addEventListener('change', function(){ toggleGuides(this.checked); });
+        
         document.getElementById('fileIn').onchange = (e) => {
             const f = e.target.files[0]; if(!f) return;
             const r = new FileReader();
             r.onload = (ev) => {
                 const d = ev.target.result;
-                // 修复：同时检查 MIME type 和 文件名后缀，强制进入矢量模式
                 if(f.type.includes('svg') || f.name.toLowerCase().endsWith('.svg')) {
-                    // SVG 导入优化：保留原始结构
                     fabric.loadSVGFromURL(d, (obs, ops) => {
                         const g = fabric.util.groupSVGElements(obs, ops);
-                        g.scaleToWidth(200); canvas.centerObject(g); canvas.add(g); canvas.setActiveObject(g);
-                        updateProps();
+                        g.scaleToWidth(200); canvas.centerObject(g); canvas.add(g); canvas.setActiveObject(g); updateProps(); historyManager.save();
                     });
                 } else {
                     fabric.Image.fromURL(d, (img) => {
-                        img.scaleToWidth(300); canvas.centerObject(img); canvas.add(img); canvas.setActiveObject(img);
-                        updateProps();
+                        img.scaleToWidth(300); canvas.centerObject(img); canvas.add(img); canvas.setActiveObject(img); updateProps(); historyManager.save();
                     });
                 }
             };
-            r.readAsDataURL(f);
-            // 清除 input value 允许重复上传同一文件
-            e.target.value = '';
+            r.readAsDataURL(f); e.target.value = '';
         };
         
-        // 键盘快捷键
         document.addEventListener('keydown', e => {
             if(e.target.tagName === 'INPUT') return;
             if(e.key === 'Delete' || e.key === 'Backspace') act('del');
             if((e.ctrlKey || e.metaKey) && e.key === 'c') act('copy');
             if((e.ctrlKey || e.metaKey) && e.key === 'g') { e.preventDefault(); e.shiftKey ? act('ungroup') : act('group'); }
+            
+            // Undo/Redo
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); historyManager.undo(); }
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); historyManager.redo(); }
         });
+        
+        window.onload = initSidebar;
+
     </script>
 </body>
 </html>
